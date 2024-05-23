@@ -56,6 +56,10 @@ public class Clue {
         return startY;
     }
 
+    public String getDirection() {
+        return direction;
+    }
+
     //#endregion
 
     //#region Printers

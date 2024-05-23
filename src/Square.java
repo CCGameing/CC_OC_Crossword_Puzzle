@@ -15,4 +15,5 @@ public class Square {
     public char getLetter() {
         return letter;
     }
+
 }

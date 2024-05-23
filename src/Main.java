@@ -16,7 +16,7 @@ public class Main {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws FileNotFoundException {
 
         do {
 
@@ -69,9 +69,16 @@ public class Main {
     }
 
     private static void takeGuess() {
+
+        System.out.println(
+                "\nEnter HintID you would like to answer"
+        );
+
     }
 
     public static void displayAllClues() {
+
+        game.printHints(-1);
 
     }
 
