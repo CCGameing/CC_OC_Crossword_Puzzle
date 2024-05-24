@@ -14,7 +14,7 @@ public class Crossword {
         this.size = size;
         this.tileGrid = initializeGrid(this.size);
         this.clueList = FileHandler.getClueList(Main.CROSSWORD_DATA);
-        generateClueGrid();
+        updateClueGrid();
 
     }
 
@@ -44,35 +44,28 @@ public class Crossword {
 
     }
 
-    private void generateClueGrid() {
+    private void updateClueGrid() {
 
         clueList.forEach( clue -> {
 
             //Write it on the grid
-            String answer = clue.getAnswer();
+            String guess = clue.getGuess();
 
             int posX = clue.getStartX();
             int posY = clue.getStartY();
 
-            for (int i = 0; i < answer.length(); i++) {
+            for (int i = 0; i < guess.length(); i++) {
 
-                char newChar;
-
-                if (i == 0) {
-                    newChar = String.valueOf(clue.getHintID()).charAt(0);
-                }
-                else {
-                    newChar = '.';
-                }
+                char next = guess.charAt(i);
 
                 switch (clue.getDirection()) {
 
                     case "h":
-                        tileGrid[posY].get((posX + i)).setLetter(newChar);
+                        tileGrid[posY].get((posX + i)).setLetter(next);
                         break;
 
                     case "v":
-                        tileGrid[posY + i].get(posX).setLetter(newChar);
+                        tileGrid[posY + i].get(posX).setLetter(next);
                         break;
 
                     default:
@@ -85,11 +78,98 @@ public class Crossword {
 
     }
 
+    public void guess(int hintID, String guess) {
+
+        boolean match = false;
+
+        for (int i = 0; i < clueList.size(); i++) {
+
+            Clue clue = clueList.get(i);
+
+            if (clue.getHintID() == hintID) {
+
+                match = true;
+
+                if (!clue.validateGuess(guess)) {
+
+                    printFormat("Guess does not fit in this space");
+
+                    return;
+                }
+
+                clue.setGuess(guess);
+
+            }
+        }
+
+        if (!match) {
+            printFormat("HintID not found!");
+        }
+
+    }
+
+    public void checkAnswers() {
+
+        clueList.forEach( clue -> {
+            clue.setCorrect(clue.getAnswer().equalsIgnoreCase(clue.getGuess()));
+        });
+
+    }
+
+    public void checkScore() {
+
+        StringBuilder result = new StringBuilder();
+
+        int score = 0;
+
+        for (int i = 0; i < clueList.size(); i++) {
+
+            Clue clue = clueList.get(i);
+
+            result.append(clue.printCorrect() + "\n");
+            if (clue.isCorrect()) { score++; }
+        }
+
+        result.append("\nScore: " + score + "/" + clueList.size());
+
+        printFormat(result.toString());
+
+    }
+
+    public void erase(int hintID) {
+
+        boolean match = false;
+
+        for (int i = 0; i < clueList.size(); i++) {
+
+            Clue clue = clueList.get(i);
+
+            if (clue.getHintID() == hintID) {
+                match = true;
+                String answer = clue.getAnswer();
+                String initial = clue.initialGuess(answer);
+                clue.setGuess(initial);
+
+            }
+        }
+
+        if (match) {
+            printFormat("Hint erased!");
+
+        } else {
+            printFormat("HintID not found!");
+
+        }
+
+    }
+
     //#endregion
 
     //#region Printers
     public void displayBoard() {
 
+        updateClueGrid();
+        
         for (int i = 0; i < tileGrid.length; i++) {
 
             ArrayList<Square> row = tileGrid[i];
@@ -112,15 +192,64 @@ public class Crossword {
 
     public void printHints(int hintID) {
 
+        StringBuilder result = new StringBuilder();
+
         if (hintID == -1) {
 
+            result.append("All Clues: ");
+            clueList.forEach( clue -> result.append("\n" + clue));
+
+        } else {
+
+            result.append("Next Clue: ");
             clueList.forEach( clue -> {
-                System.out.println(clue);
+
+                if (clue.getHintID() == hintID) {
+                    result.append("\n" + clue);
+                }
+
             });
-            return;
+
         }
 
-        System.out.println(clueList.get(hintID));
+        printFormat(result.toString());
+
+    }
+
+    public void printDivider() {
+
+        for (int i = 0; i < (size * 2) + 1; i++) {
+            System.out.print("=");
+        }
+        System.out.println();
+
+    }
+
+    public int getNextClue() {
+
+        int next = -1;
+
+        for (int i = 0; i < clueList.size(); i++) {
+
+            Clue check = clueList.get(i);
+            if (!check.isCorrect()) {
+                next = check.getHintID();
+                break;
+            }
+
+        }
+
+        return next;
+
+    }
+
+    public void printFormat(String line) {
+
+            System.out.println();
+            printDivider();
+            System.out.println(line);
+            printDivider();
+            System.out.println();
 
     }
 

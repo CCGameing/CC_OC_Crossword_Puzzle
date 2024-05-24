@@ -12,10 +12,10 @@ public class Clue {
     private boolean isCorrect;
 
     public Clue(
-            int startX, int startY,
+            int startY, int startX,
             String direction,
-            int hintID, String hint,
-            String answer
+            int hintID, String answer,
+            String hint
     ) {
         this.startX = startX;
         this.startY = startY;
@@ -23,6 +23,8 @@ public class Clue {
         this.hintID = hintID;
         this.hint = hint;
         this.answer = answer;
+        this.isCorrect = false;
+        this.guess = initialGuess(answer);
     }
 
     //#endregion
@@ -30,10 +32,24 @@ public class Clue {
     //#region Methods
     public boolean validateGuess(String newGuess) {
 
-        if (newGuess.length() > answer.length()) {
+        if (newGuess.length() != answer.length()) {
             return false;
         }
         return true;
+
+    }
+
+    public String initialGuess(String answer) {
+
+        StringBuilder result = new StringBuilder();
+
+        result.append(hintID);
+
+        for (int i = 1; i < answer.length(); i++) {
+            result.append(".");
+        }
+
+        return result.toString();
 
     }
 
@@ -60,16 +76,44 @@ public class Clue {
         return direction;
     }
 
+    public boolean isCorrect() {
+        return isCorrect;
+    }
+
+    public String getGuess() {
+        return guess;
+    }
+
+    public void setGuess(String guess) {
+        this.guess = guess;
+    }
+
+    public void setCorrect(boolean b) {
+        isCorrect = b;
+    }
+
     //#endregion
 
     //#region Printers
     @Override
     public String toString() {
-        return hintID + ". " + hint;
+        return hintID + ". " + hint +
+        "\n" + "Current Guess: " + guess;
     }
 
     public String printAnswer() {
         return hintID + ". " + answer + " (" + hint + ")";
+    }
+
+    public String printCorrect() {
+
+        String result = Utils.listToLength(
+                new String[]{hintID + ". ", guess, "=", String.valueOf(isCorrect)},
+                ' ',
+                new int[]{4, 16, 20}
+        );
+
+        return result;
     }
 
     //#endregion
